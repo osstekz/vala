@@ -679,8 +679,6 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 		if (arg.target_type != null) {
 			if ((direction == ParameterDirection.IN || direction == ParameterDirection.REF)
 			    && !arg.value_type.compatible (arg.target_type)) {
-				stderr.printf("Target parent type: %s\n", arg.target_type.parent_node == null ? "null" : Type.from_instance(arg.target_type.parent_node).name());
-				stderr.printf("arg value: %s, target: %s, target_type_symbol: %s\n", Type.from_instance(arg.value_type).name(), Type.from_instance(arg.target_type).name(), arg.target_type.type_symbol == null ? "null" : Type.from_instance(arg.target_type.type_symbol).name());
 				Report.error (arg.source_reference, "Argument %d: Cannot convert from `%s' to `%s'".printf (i + 1, arg.value_type.to_prototype_string (), arg.target_type.to_prototype_string ()));
 				return false;
 			} else if ((direction == ParameterDirection.REF || direction == ParameterDirection.OUT)
