@@ -199,6 +199,15 @@ public class Vala.CastExpression : Expression {
 
 		if (is_silent_cast) {
 			value_type.nullable = true;
+
+			// Drop superfluous casts, if the source and target type matches then this cast is not required
+			if (context.profile == Profile.GOBJECT
+			    && type_reference.type_symbol is ObjectTypeSymbol && type_reference.type_symbol == inner.value_type.type_symbol) {
+				Report.warning (source_reference, "Casting to `%s' is superfluous".printf (type_reference.to_qualified_string ()));
+				context.analyzer.replaced_nodes.add (this);
+				parent_node.replace_expression (this, inner);
+				return !error;
+			}
 		}
 
 		if (context.profile == Profile.GOBJECT
