@@ -986,6 +986,10 @@ public class Vala.MemberAccess : Expression {
 				var parent_type = SemanticAnalyzer.get_data_type_for_symbol (symbol_reference.parent_symbol);
 				inner.target_type = parent_type.get_actual_type (inner.value_type, null, this);
 			}
+
+			if (inner == null) {
+				value_type = SemanticAnalyzer.get_narrowed_type (this);
+			}
 		}
 
 		if (value_type != null) {

@@ -942,6 +942,51 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 		return null;
 	}
 
+	public static DataType get_narrowed_type (MemberAccess member_access) {
+		unowned Variable? variable = member_access.symbol_reference as Variable;
+		if (variable == null) {
+			return member_access.value_type;
+		}
+
+		if (!(member_access.parent_node is MemberAccess)) {
+			return member_access.value_type;
+		}
+
+		bool is_negation = false;
+		unowned CodeNode? parent = member_access.parent_node;
+		while (parent != null && !(parent is Method)) {
+			if (parent is TypeCheck) {
+				parent = null;
+				break;
+			}
+			if (parent.parent_node is IfStatement) {
+				is_negation = ((IfStatement) parent.parent_node).false_statement == parent;
+				break;
+			}
+			parent = parent.parent_node;
+		}
+
+		if (parent != null && parent.parent_node is IfStatement) {
+			unowned Expression expr = ((IfStatement) parent.parent_node).condition;
+			if (expr is UnaryExpression && ((UnaryExpression) expr).operator == UnaryOperator.LOGICAL_NEGATION) {
+				expr = ((UnaryExpression) expr).inner;
+				is_negation = !is_negation;
+			}
+			unowned TypeCheck? type_check = expr as TypeCheck;
+			if (!is_negation && type_check != null) {
+				var narrowed_type = type_check.type_reference.copy ();
+				narrowed_type.value_owned = member_access.value_type.value_owned;
+				if (variable == type_check.expression.symbol_reference
+				    && narrowed_type.type_symbol != member_access.value_type.type_symbol) {
+					Report.notice (member_access.source_reference, @"`$(variable.variable_type) $variable' narrowed by `$expr' to `$narrowed_type'");
+					return narrowed_type;
+				}
+			}
+		}
+
+		return member_access.value_type;
+	}
+
 	public static DataType get_actual_type (DataType? derived_instance_type, List<DataType>? method_type_arguments, GenericType generic_type, CodeNode? node_reference) {
 		DataType actual_type = null;
 		if (generic_type.type_parameter.parent_symbol is TypeSymbol) {

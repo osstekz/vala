@@ -450,6 +450,7 @@ TESTS = \
 	objects/signals-prototype-access-invalid-2.test \
 	objects/signals-struct-return.vala \
 	objects/singleton.vala \
+	objects/type-narrowing.vala \
 	objects/test-025.vala \
 	objects/test-026.vala \
 	objects/test-029.vala \
