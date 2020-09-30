@@ -4450,6 +4450,20 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 		}
 	}
 
+	public override void visit_class_access (ClassAccess expr) {
+		CCodeExpression klass;
+		if (get_this_type () == null) {
+			// Accessing the method from a static or class constructor
+			klass = new CCodeIdentifier ("klass");
+		} else {
+			// Accessing the method from within an instance method
+			var k = new CCodeFunctionCall (new CCodeIdentifier ("G_OBJECT_GET_CLASS"));
+			k.add_argument (get_this_cexpression ());
+			klass = k;
+		}
+		set_cvalue (expr, klass);
+	}
+
 	public override void visit_postfix_expression (PostfixExpression expr) {
 		MemberAccess ma = find_property_access (expr.inner);
 		if (ma != null) {
