@@ -60,7 +60,7 @@ public class Vala.Scanner {
 		REGEX_LITERAL
 	}
 
-	public Scanner (SourceFile source_file) {
+	public Scanner (SourceFile source_file,bool bAcceptsAllComments=false) {
 		this.source_file = source_file;
 
 		//OSS:Create SourceReference for all comments so our code-formatter handles single-line comments

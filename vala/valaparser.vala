@@ -391,7 +391,7 @@ public class Vala.Parser : CodeVisitor {
 		}
 	}
 
-	public void parse_file (SourceFile source_file) {
+	public void parse_file (SourceFile source_file, int max_errs=100) {
 		var has_global_context = (context != null);
 		if (!has_global_context) {
 			context = source_file.context;
