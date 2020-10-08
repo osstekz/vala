@@ -43,6 +43,16 @@ public class Vala.Namespace : Symbol {
 	private List<UsingDirective> using_directives = new ArrayList<UsingDirective> ();
 
 	/**
+	 * Returns a copy of the list of using directives.
+    * OSS:Add get using_directives
+	 *
+	 * @return using_directives list
+	 */
+	public List<UsingDirective> get_using_directives () {
+		return using_directives;
+	}
+	
+	/**
 	 * Creates a new namespace.
 	 *
 	 * @param name             namespace name

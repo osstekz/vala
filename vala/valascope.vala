@@ -28,13 +28,15 @@ using GLib;
 public class Vala.Scope {
 	/**
 	 * The symbol that owns this scope.
+    * OSS:Fix:Avoid invalid/uninitialized memory address, add default
 	 */
-	public weak Symbol owner { get; set; }
+	public weak Symbol owner { get; set; default=null;}
 
 	/**
 	 * The parent of this scope.
+    * OSS:Fix:Avoid invalid/uninitialized memory address, add default
 	 */
-	public weak Scope parent_scope { get; set; }
+	public weak Scope parent_scope { get; set; default=null;}
 
 	private Map<string,Symbol> symbol_table;
 	private List<Symbol> anonymous_members;

@@ -33,4 +33,23 @@ public class Vala.CCodeMacroReplacement : CCodeDefine {
 	public CCodeMacroReplacement.with_expression (string name, CCodeExpression replacement_expression) {
 		base.with_expression (name, replacement_expression);
 	}
+
+	public override void write (CCodeWriter writer) {
+		//OSS:DBG:Add constants before structs defining myarray[myconstant]
+		// if(name=="MAX_LINES"){
+		// 	writer.write_string ("//OSS:DBG:valacodemacroreplacement found ");
+		// 	writer.write_string (name);
+		// 	writer.write_newline ();
+		// }
+		writer.write_indent ();
+		writer.write_string ("#define ");
+		writer.write_string (name);
+		writer.write_string (" ");
+		if (replacement != null) {
+			writer.write_string (replacement);
+		} else {
+			replacement_expression.write_inner (writer);
+		}
+		writer.write_newline ();
+	}
 }

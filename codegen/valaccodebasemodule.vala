@@ -991,7 +991,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 				} else {
 					cdecl.modifiers = CCodeModifiers.EXTERN;
 				}
-
+				// if(context.debug)
+            // 	decl_space.add_comment (new CCodeComment("OSS:993 add_constant_declaration"));
 				decl_space.add_constant_declaration (cdecl);
 			} else {
 				if (c.value is StringLiteral && ((StringLiteral) c.value).translate) {
@@ -1000,7 +1001,10 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 					add_symbol_declaration (decl_space, m, get_ccode_name (m));
 				}
 
+
 				var cdefine = new CCodeMacroReplacement.with_expression (get_ccode_name (c), get_cvalue (c.value));
+				// if(context.debug)
+				//    decl_space.add_comment (new CCodeComment("OSS:997 add_type_member_declaration %s".printf(cdefine.name)));
 				decl_space.add_type_member_declaration (cdefine);
 			}
 		}
@@ -1103,6 +1107,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 		if (f.is_volatile) {
 			cdecl.modifiers |= CCodeModifiers.VOLATILE;
 		}
+		// if(context.debug)
+		//    decl_space.add_comment (new CCodeComment("OSS:1110 add_type_member_declaration: %s".printf(cdecl.type_name)));
 		decl_space.add_type_member_declaration (cdecl);
 
 		if (f.lock_used) {
@@ -1118,6 +1124,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 			} else {
 				flock.modifiers = CCodeModifiers.EXTERN;
 			}
+			// if(context.debug)
+			//   decl_space.add_comment (new CCodeComment("OSS:1127 add_type_member_declaration"));
 			decl_space.add_type_member_declaration (flock);
 		}
 
@@ -1137,6 +1145,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 					} else {
 						cdecl.modifiers = CCodeModifiers.EXTERN;
 					}
+					// if(context.debug)
+					//    decl_space.add_comment (new CCodeComment("OSS:1148 add_type_member_declaration"));
 					decl_space.add_type_member_declaration (cdecl);
 				}
 			}
@@ -1154,6 +1164,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 				} else {
 					cdecl.modifiers = CCodeModifiers.EXTERN;
 				}
+				// if(context.debug)
+				//    decl_space.add_comment (new CCodeComment("OSS:1167 add_type_member_declaration"));
 				decl_space.add_type_member_declaration (cdecl);
 
 				if (delegate_type.is_disposable ()) {
@@ -1166,6 +1178,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 					} else {
 						cdecl.modifiers = CCodeModifiers.EXTERN;
 					}
+					// if(context.debug)
+					// 	decl_space.add_comment (new CCodeComment("OSS:1181 add_type_member_declaration"));
 					decl_space.add_type_member_declaration (cdecl);
 				}
 			}
@@ -1323,6 +1337,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 				if (f.is_volatile) {
 					var_def.modifiers |= CCodeModifiers.VOLATILE;
 				}
+				// if(context.debug)
+				// 	cfile.add_comment (new CCodeComment("OSS:1340 add_type_member_declaration"));			
 				cfile.add_type_member_declaration (var_def);
 
 				/* add array length fields where necessary */
@@ -1340,6 +1356,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 							} else {
 								len_def.modifiers = CCodeModifiers.STATIC;
 							}
+							// if(context.debug)
+							// 	cfile.add_comment (new CCodeComment("OSS:1324 add_type_member_declaration"));
 							cfile.add_type_member_declaration (len_def);
 						}
 
@@ -1347,6 +1365,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 							var cdecl = new CCodeDeclaration (length_ctype);
 							cdecl.add_declarator (new CCodeVariableDeclarator (get_array_size_cname (get_ccode_name (f)), new CCodeConstant ("0")));
 							cdecl.modifiers = CCodeModifiers.STATIC;
+							// if(context.debug)
+							// 	cfile.add_comment (new CCodeComment("OSS:1368 add_type_member_declaration"));
 							cfile.add_type_member_declaration (cdecl);
 						}
 					}
@@ -1362,6 +1382,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 						} else {
 							target_def.modifiers = CCodeModifiers.STATIC;
 						}
+						// if(context.debug)
+						// 	cfile.add_comment (new CCodeComment("OSS:1385 add_type_member_declaration"));
 						cfile.add_type_member_declaration (target_def);
 
 						if (delegate_type.is_disposable ()) {
@@ -1372,6 +1394,8 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 							} else {
 								target_destroy_notify_def.modifiers = CCodeModifiers.STATIC;
 							}
+							// if(context.debug)
+							// 	cfile.add_comment (new CCodeComment("OSS:1397 add_type_member_declaration"));
 							cfile.add_type_member_declaration (target_destroy_notify_def);
 
 						}

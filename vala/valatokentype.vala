@@ -154,7 +154,10 @@ public enum Vala.TokenType {
 	WEAK,
 	WHILE,
 	WITH,
-	YIELD;
+	YIELD,
+	//OSS:Add new comment token for code_formatter
+	COMMENT=1000;
+
 
 	public unowned string to_string () {
 		switch (this) {
@@ -187,6 +190,10 @@ public enum Vala.TokenType {
 		case CLOSE_TEMPLATE: return "close template";
 		case COLON: return "`:'";
 		case COMMA: return "`,'";
+
+		//OSS:Add new comment token for code_formatter
+      case COMMENT: return "`comment'";
+
 		case CONST: return "`const'";
 		case CONSTRUCT: return "`construct'";
 		case CONTINUE: return "`continue'";

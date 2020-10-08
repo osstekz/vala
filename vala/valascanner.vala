@@ -29,6 +29,9 @@ using GLib;
 public class Vala.Scanner {
 	public SourceFile source_file { get; private set; }
 
+	//OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+	bool bScannerAcceptsAllComments=false;
+
 	TokenType previous;
 	char* current;
 	char* end;
@@ -60,6 +63,13 @@ public class Vala.Scanner {
 	public Scanner (SourceFile source_file) {
 		this.source_file = source_file;
 
+		//OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+		if (bAcceptsAllComments){
+			this.bScannerAcceptsAllComments= source_file.filename.has_suffix(".vala")||source_file.filename.has_suffix(".vapi");
+			if (this.bScannerAcceptsAllComments)
+				source_file.get_comments().clear();
+		}
+		
 		char* begin = source_file.get_mapped_contents ();
 		end = begin + source_file.get_mapped_length ();
 
@@ -1587,9 +1597,13 @@ public class Vala.Scanner {
 			return false;
 		}
 
+      //OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+      // stdout.printf("OSS.valascanner comments accept[%s]\n",(file_comment||bScannerAcceptsAllComments).to_string());
+
 		if (current[1] == '/') {
 			SourceReference source_reference = null;
-			if (file_comment) {
+         //OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+			if (file_comment||bScannerAcceptsAllComments) {
 				source_reference = get_source_reference (0);
 			}
 
@@ -1602,17 +1616,21 @@ public class Vala.Scanner {
 				current++;
 			}
 
+			//OSS:Enh:Original content was Single or Multiline
 			if (source_reference != null) {
-				push_comment (((string) begin).substring (0, (long) (current - begin)), source_reference, file_comment);
+				push_comment (((string) begin).substring (0, (long) (current - begin)), source_reference, file_comment||bScannerAcceptsAllComments/*,true*/);
 			}
 		} else {
 			SourceReference source_reference = null;
 
+         //OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
 			if (file_comment && current[2] == '*') {
+				//stdout.puts("OSS ...skipping comment\n");
 				return false;
 			}
 
-			if (current[2] == '*' || file_comment) {
+         //OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+			if (current[2] == '*' || file_comment||bScannerAcceptsAllComments) {
 				source_reference = get_source_reference (0);
 			}
 
@@ -1657,16 +1675,24 @@ public class Vala.Scanner {
 	}
 
 	void push_comment (string comment_item, SourceReference source_reference, bool file_comment) {
+		//OSS:Enh:Original content was Single or Multiline
+		//stdout.printf("OSS push_comment begin[%d/%d] end[%d/%d]\n",
+		// source_reference.begin.line,source_reference.begin.column,
+		// source_reference.end.line,source_reference.end.column);
+      //string basename=Path.get_basename(source_file.filename);
+
 		if (comment_item[0] == '*') {
 			if (_comment != null) {
 				// extra doc comment, add it to source file comments
 				source_file.add_comment (_comment);
+				//stdout.printf("OSS ...added %s comment1[%s] \n",basename, comment_item);
 			}
 			_comment = new Comment (comment_item, source_reference);
 		}
 
 		if (file_comment) {
 			source_file.add_comment (new Comment (comment_item, source_reference));
+			//stdout.printf("OSS ...added %s comment2[%s] \n",basename,comment_item);
 			_comment = null;
 		}
 	}

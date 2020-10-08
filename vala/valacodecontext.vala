@@ -210,7 +210,11 @@ public class Vala.CodeContext {
 
 	private List<string> packages = new ArrayList<string> (str_equal);
 
-	private Set<string> defines = new HashSet<string> (str_hash, str_equal);
+	//OSS:Enh:add Reporting/Debug visibility
+	private Set<string> _defines = new HashSet<string> (str_hash, str_equal);
+	public Set<string> defines {
+		get{ return _defines;}
+		}
 
 	static StaticPrivate context_stack_key = StaticPrivate ();
 
@@ -248,6 +252,13 @@ public class Vala.CodeContext {
 		flow_analyzer = new FlowAnalyzer ();
 		used_attr = new UsedAttr ();
 	}
+
+   //-------------------------------------------
+   //OSS:Fix: CodeContext(get,pop) Verify context_stack not null and size>0 to avoid errors ie.
+   // arraylist.c:262:vala_array_list_real_get: assertion failed: (index >= 0 && index < _size)
+   // vala_collection_get_size: assertion 'self != NULL' failed
+   // vala_list_get: assertion 'self != NULL' failed
+   //-------------------------------------------
 
 	/**
 	 * Return the topmost context from the context stack.
@@ -288,6 +299,17 @@ public class Vala.CodeContext {
 		context_stack->remove_at (context_stack->size - 1);
 	}
 
+//OSS:Enh:Debug aid to retrieve context stack size.
+	public static uint stack_size  {
+      get {
+         uint _size=0;
+  		   ArrayList<CodeContext>* context_stack = context_stack_key.get ();
+         if (context_stack != null)
+      		_size=context_stack->size;
+         return _size;
+	   	}
+      }
+      
 	/**
 	 * Returns the list of source files.
 	 *
@@ -398,7 +420,8 @@ public class Vala.CodeContext {
 		add_source_file (new SourceFile (this, SourceFileType.PACKAGE, path));
 
 		if (verbose_mode) {
-			stdout.printf ("Loaded package `%s'\n", path);
+         //OSS:Fix added '\r'
+			stdout.printf ("Loaded package `%s'\r\n", path);
 		}
 
 		var deps_filename = Path.build_path ("/", Path.get_dirname (path), pkg + ".deps");
@@ -493,6 +516,17 @@ public class Vala.CodeContext {
 
 		return true;
 	}
+
+	/**
+	  	 * OSS:Enh:Add custom attributes
+	 * Adds the specified attribute to list.
+	 *
+	 * @param attr_name an attribute type name
+	 * @param parm_name an attribute argument name
+	 */
+	public void add_custom_attribute (string attr_name, string parm_name) {
+		used_attr.mark (attr_name, parm_name);
+		}
 
 	/**
 	 * Visits the complete code tree file by file.

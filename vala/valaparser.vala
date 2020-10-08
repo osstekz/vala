@@ -64,6 +64,16 @@ public class Vala.Parser : CodeVisitor {
 		SEALED
 	}
 
+	//OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+	bool _bScannerAcceptsAllComments=false;
+	public bool bScannerAcceptsAllComments { 
+		get{
+			return _bScannerAcceptsAllComments;
+		} set{
+			_bScannerAcceptsAllComments=value;
+		}
+	}
+
 	public Parser () {
 		tokens = new TokenInfo[BUFFER_SIZE];
 	}
@@ -367,13 +377,33 @@ public class Vala.Parser : CodeVisitor {
 		}
 	}
 
+	int max_errors;
+	//throttling max errors, provides bailout/cancellation
+	public void hdlReportErr(Vala.SourceReference?source, string message) {
+		Report.error (source, message);
+		//OSS:Force bailout
+		if (--max_errors<0){
+			size=0;
+			index=0;
+			char* end = scanner.source_file.get_mapped_contents () + scanner.source_file.get_mapped_length ();
+			scanner.seek (SourceLocation(end,10000,10000));
+			Report.warning (source, "Max errors exceeded");
+		}
+	}
+
 	public void parse_file (SourceFile source_file) {
 		var has_global_context = (context != null);
 		if (!has_global_context) {
 			context = source_file.context;
 		}
 
-		scanner = new Scanner (source_file);
+		//OSS:throttle max errors per file
+		if (max_errs>100 || max_errs<1)
+			max_errs=100;
+		this.max_errors=max_errs;
+		//OSS:Create SourceReference for all comments so our code-formatter handles single-line comments
+		scanner = new Scanner (source_file,_bScannerAcceptsAllComments);
+
 		parse_file_comments ();
 
 		index = -1;

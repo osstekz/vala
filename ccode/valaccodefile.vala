@@ -157,20 +157,55 @@ public class Vala.CCodeFile {
 
 			comments.write (writer);
 			writer.write_newline ();
+
+         //OSS:Add comments for Debug/Logging
+         //writer.write_comment("OSS: cfile:feature_test_macros");
+			//writer.write_newline ();
+
 			feature_test_macros.write (writer);
 			writer.write_newline ();
+			
+         //OSS:Add comments for Debug/Logging
+         //writer.write_comment("OSS: cfile:include_directives");
+			//writer.write_newline ();
+
 			include_directives.write (writer);
 			writer.write_newline ();
+			
+         //OSS:Add comments for Debug/Logging
+         //writer.write_comment("OSS: cfile:type_declaration");
+			//writer.write_newline ();
+
 			type_declaration.write_combined (writer);
 			writer.write_newline ();
+			
+         //writer.write_comment("OSS: cfile:type_definition");
+			//writer.write_newline ();
+
 			type_definition.write_combined (writer);
 			writer.write_newline ();
+			
+         //writer.write_comment("OSS: cfile:type_member_declaration.write_declaration");
+			//writer.write_newline ();
+
 			type_member_declaration.write_declaration (writer);
 			writer.write_newline ();
+			
+         //writer.write_comment("OSS: cfile:type_member_declaration");
+			//writer.write_newline ();
+
 			type_member_declaration.write (writer);
 			writer.write_newline ();
+			
+         //writer.write_comment("OSS: cfile:constant_declaration.write_combined");
+			//writer.write_newline ();
+
 			constant_declaration.write_combined (writer);
 			writer.write_newline ();
+			
+         //writer.write_comment("OSS: cfile:type_member_definition");
+			//writer.write_newline ();
+
 			type_member_definition.write (writer);
 			writer.write_newline ();
 		} else {
@@ -186,13 +221,21 @@ public class Vala.CCodeFile {
 				once.append (new CCodeNewline ());
 			}
 
+         //OSS:Add comments for Debug/Logging
+         // once.append(new CCodeComment("OSS: cheader:type_declaration"));
 			once.append (new CCodeNewline ());
 			once.append (type_declaration);
 			once.append (new CCodeNewline ());
+
+         // once.append(new CCodeComment("OSS: cheader:type_definition"));
 			once.append (type_definition);
 			once.append (new CCodeNewline ());
+
+         // once.append(new CCodeComment("OSS: cheader:type_member_declaration"));
 			once.append (type_member_declaration);
 			once.append (new CCodeNewline ());
+
+         // once.append(new CCodeComment("OSS: cheader:constant_declaration"));
 			once.append (constant_declaration);
 			once.append (new CCodeNewline ());
 

@@ -101,6 +101,10 @@ class Vala.Compiler {
 	static bool run_output;
 	static string run_args;
 
+    //OSS:Enh:Add custom attributes
+	[CCode (array_length = false, array_null_terminated = true)]
+	static string[] custom_attrs;
+
 	private CodeContext context;
 
 	const OptionEntry[] options = {
@@ -163,6 +167,9 @@ class Vala.Compiler {
 		{ "gresourcesdir", 0, 0, OptionArg.FILENAME_ARRAY, ref gresources_directories, "Look for resources in DIRECTORY", "DIRECTORY..." },
 		{ "enable-version-header", 0, 0, OptionArg.NONE, ref enable_version_header, "Write vala build version in generated files", null },
 		{ "disable-version-header", 0, 0, OptionArg.NONE, ref disable_version_header, "Do not write vala build version in generated files", null },
+      //OSS:Enh:Add custom attributes
+		{ "attrs", 0, 0, OptionArg.STRING_ARRAY, ref custom_attrs, "Allow custom attributes", null },
+		{ "", 0, 0, OptionArg.FILENAME_ARRAY, ref sources, null, "FILE..." },
 		{ "run-args", 0, 0, OptionArg.STRING, ref run_args, "Arguments passed to directly compiled executable", null },
 		{ "abi-stability", 0, 0, OptionArg.NONE, ref abi_stability, "Enable support for ABI stability", null },
 		{ OPTION_REMAINING, 0, 0, OptionArg.FILENAME_ARRAY, ref sources, null, "FILE..." },
@@ -258,6 +265,24 @@ class Vala.Compiler {
 		context.verbose_mode = verbose_mode;
 		context.version_header = !disable_version_header;
 
+        //OSS:Enh:Add custom attributes
+		if (custom_attrs != null) {
+		    //args[0]=Attribute type name
+			//args[1 to ...]=comma separated attribute argument names
+			foreach (string attr in custom_attrs) {
+				string[] parms = attr.split(",");
+                string attr_type_name = parms[0];
+				if (parms.length <= 1) {
+        			Report.error (null, "Invalid --custom-attrs 'type,arg0_name,...' '%s' length[%d]".printf(attr,parms.length));
+        		}else {
+    				for (int i = 1; i < parms.length; i++) {
+	    				context.add_custom_attribute (attr_type_name, parms[i]);
+	    				}
+	    			}
+                }
+			custom_attrs = null;
+		}
+		
 		context.ccode_only = ccode_only;
 		if (ccode_only && cc_options != null) {
 			Report.warning (null, "-X has no effect when -C or --ccode is set");
@@ -539,7 +564,8 @@ class Vala.Compiler {
 
 	static int run_source (string[] args) {
 		try {
-			var opt_context = new OptionContext ("- Vala Interpreter");
+         //OSS:With respect, just to make it easier to identify our changes
+			var opt_context = new OptionContext ("- Vala(osstekz) Interpreter");
 			opt_context.set_help_enabled (true);
 			opt_context.add_main_entries (options, null);
 			opt_context.parse (ref args);
@@ -596,6 +622,10 @@ class Vala.Compiler {
 			}
 		}
 
+		//OSS:Debug:Show target_args
+		if (debug)
+			stdout.printf ("OSS:Debug:spawn_async args:%s\n",string.joinv(" ", target_args) );
+
 		try {
 			Pid pid;
 			var loop = new MainLoop ();
@@ -627,7 +657,8 @@ class Vala.Compiler {
 		}
 
 		try {
-			var opt_context = new OptionContext ("- Vala Compiler");
+         //OSS:With respect, just to make it easier to identify our changes
+			var opt_context = new OptionContext ("- Vala(osstekz) Compiler");
 			opt_context.set_help_enabled (true);
 			opt_context.add_main_entries (options, null);
 			opt_context.parse (ref args);
@@ -637,8 +668,9 @@ class Vala.Compiler {
 			return 1;
 		}
 		
+      //OSS:With respect, just to make it easier to identify or changes
 		if (version) {
-			stdout.printf ("Vala %s\n", Vala.BUILD_VERSION);
+			stdout.printf ("Vala(osstekz) %s\n", Vala.BUILD_VERSION);
 			return 0;
 		} else if (api_version) {
 			stdout.printf ("%s\n", Vala.API_VERSION);

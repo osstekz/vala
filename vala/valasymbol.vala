@@ -54,8 +54,9 @@ public abstract class Vala.Symbol : CodeNode {
 
 	/**
 	 * The symbol name.
+    * OSS:Fix:Avoid invalid/uninitialized memory address
 	 */
-	public string? name { get; set; }
+	public string? name { get; set; default=null;}
 
 	/**
 	 * Specifies whether this symbol is active.
@@ -206,8 +207,9 @@ public abstract class Vala.Symbol : CodeNode {
 		}
 	}
 
-	private weak Scope _owner;
-	private Scope _scope;
+   //OSS:Fix:Avoid invalid/uninitialized memory address
+   private weak Scope _owner = null;
+	private Scope _scope = null;
 	private bool? _external;
 
 	protected Symbol (string? name, SourceReference? source_reference, Comment? comment = null) {

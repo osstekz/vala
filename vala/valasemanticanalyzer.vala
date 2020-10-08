@@ -269,6 +269,9 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 	public DataType? get_value_type_for_symbol (Symbol sym, bool lvalue) {
 		if (sym is Field) {
 			unowned Field f = (Field) sym;
+			//OSS:Fix: check for null
+			if(f.variable_type==null)return null;
+			
 			var type = f.variable_type.copy ();
 			if (!lvalue) {
 				type.value_owned = false;
@@ -292,6 +295,9 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 			}
 		} else if (sym is Parameter) {
 			unowned Parameter p = (Parameter) sym;
+						//OSS:Fix: check for null
+			if(p.variable_type==null)return null;
+
 			var type = p.variable_type.copy ();
 			if (!lvalue) {
 				type.value_owned = false;
@@ -299,6 +305,9 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 			return type;
 		} else if (sym is LocalVariable) {
 			unowned LocalVariable local = (LocalVariable) sym;
+			//OSS:Fix: check for null
+			if(local.variable_type==null)return null;
+
 			var type = local.variable_type.copy ();
 			if (!lvalue) {
 				type.value_owned = false;
@@ -312,7 +321,18 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 		return null;
 	}
 
-	public static Symbol? symbol_lookup_inherited (Symbol sym, string name) {
+	//OSS:Fix:Use ? to avoid null argument errors
+	public static Symbol? symbol_lookup_inherited (Symbol? sym, string? name) {
+		if(sym==null||name==null){
+			Report.error (null, "internal error: symbol_lookup_inherited invalid sym");
+			return null;
+			}
+
+		if(sym.scope==null){
+			Report.error (null, "internal error: symbol_lookup_inherited invalid sym.scope");
+			return null;
+			}
+
 		var result = sym.scope.lookup (name);
 		if (result != null) {
 			return result;
@@ -587,13 +607,49 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 			error = true;
 		}
 
-		if (diag && prev_arg != null) {
-			unowned StringLiteral? format_arg = prev_arg as StringLiteral;
-			if (format_arg != null) {
-				format_arg.value = "\"%s:%d: %s".printf (Path.get_basename (expr.source_reference.file.filename), expr.source_reference.begin.line, format_arg.value.substring (1));
+		if (diag) {
+			//OSS:Debug help locate improper/unsupported value types
+			if (prev_arg != null) {
+				StringLiteral? format_arg = prev_arg as StringLiteral;
+				if (format_arg != null) {
+					//OSS:Debug prefer short names
+					format_arg.value = "\"%s:%d: %s".printf (Path.get_basename (expr.source_reference.file.filename), expr.source_reference.begin.line, format_arg.value.substring (1));					
+					}
+				else{
+					string sval=null;
+					unowned MethodCall? mc_expr = expr as MethodCall;
+					if (mc_expr != null) {
+						if(prev_arg.is_constant ()&&prev_arg.symbol_reference!=null){
+							//OSS:Debug try to replace constant value with StringLiteral
+							Constant? const_arg = prev_arg.symbol_reference as Constant;
+							if (const_arg != null) {
+								Vala.Expression? _exp = const_arg.value;
+								sval = "";
+								if(_exp!=null){
+									sval = _exp.to_string();
+									if(sval.length>2)
+										sval = sval.substring (1,sval.length-2);
+									}
+								}
+							else{
+								sval = "unresolved";
+								}
+							}
+						else if(prev_arg.value_type!=null&&prev_arg.value_type.to_string () == "string"){
+							sval = "";
+							}
+						if(sval!=null){
+							string sval2 = "\"%s:%d: %s\"".printf (Path.get_basename (expr.source_reference.file.filename), expr.source_reference.begin.line, sval);
+							format_arg = new StringLiteral (sval2, expr.source_reference);
+							mc_expr.replace_expression (prev_arg, format_arg);
+							}
+						}
+					}
+				}
+			else{
+				Report.error (expr.source_reference, "Diagnostics:prev_arg==null: requires StringLiteral for method `%s'".printf (mtype.to_string ()));
+				}
 			}
-		}
-
 		return !error;
 	}
 
@@ -677,6 +733,11 @@ public class Vala.SemanticAnalyzer : CodeVisitor {
 		}
 
 		if (arg.target_type != null) {
+			//OSS:Fix:Avoid error vala_data_type_compatible: assertion 'self != NULL' failed
+			if(arg.value_type==null){
+				Report.error (arg.source_reference, "Argument %d: arg.value_type==null".printf (i + 1));
+				return false;
+			}
 			if ((direction == ParameterDirection.IN || direction == ParameterDirection.REF)
 			    && !arg.value_type.compatible (arg.target_type)) {
 				Report.error (arg.source_reference, "Argument %d: Cannot convert from `%s' to `%s'".printf (i + 1, arg.value_type.to_prototype_string (), arg.target_type.to_prototype_string ()));
