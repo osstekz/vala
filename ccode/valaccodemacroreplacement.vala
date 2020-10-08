@@ -45,8 +45,8 @@ public class Vala.CCodeMacroReplacement : CCodeDefine {
 		writer.write_string ("#define ");
 		writer.write_string (name);
 		writer.write_string (" ");
-		if (replacement != null) {
-			writer.write_string (replacement);
+		if (this.replacement != null) {
+			writer.write_string (this.replacement);
 		} else {
 			replacement_expression.write_inner (writer);
 		}
