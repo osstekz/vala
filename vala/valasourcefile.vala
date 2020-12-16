@@ -26,10 +26,14 @@ using GLib;
  * Represents a Vala source or VAPI package file.
  */
 public class Vala.SourceFile {
-	/**
-	 * The name of this source file.
-	 */
-	public string filename { get; private set; }
+	// The name of this source file.
+	// OSS:Enh: Public set allows file renaming without recompiling source
+	private _filename;
+	public string filename { get{return _filename;}; 
+	set{
+		_filename=value;
+		_relative_filename=null;
+	} }
 
 	public string? relative_filename {
 		set {
